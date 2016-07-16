@@ -7,3 +7,4 @@ data/imagenet_models/
 data/faster_rcnn_models
 data/VOCdevkit*
 cache
+output/
