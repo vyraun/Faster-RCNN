@@ -15,6 +15,7 @@ from fast_rcnn.nms_wrapper import nms
 
 DEBUG = False
 
+
 class ProposalLayer(caffe.Layer):
     """
     Outputs object detection proposals by applying estimated bounding-box
@@ -23,7 +24,7 @@ class ProposalLayer(caffe.Layer):
 
     def setup(self, bottom, top):
         # parse the layer parameter string, which must be valid YAML
-        layer_params = yaml.load(self.param_str_)
+        layer_params = yaml.load(self.param_str)
 
         self._feat_stride = layer_params['feat_stride']
         anchor_scales = layer_params.get('scales', (8, 16, 32))
@@ -44,6 +45,16 @@ class ProposalLayer(caffe.Layer):
         if len(top) > 1:
             top[1].reshape(1, 1, 1, 1)
 
+
+    def get_phase(self):
+        if self.phase == 0:
+            return 'TRAIN'
+        elif self.phase == 1:
+            return 'TEST'
+        else:
+            raise ValueError("Unkown Phase")
+
+
     def forward(self, bottom, top):
         # Algorithm:
         #
@@ -61,7 +72,7 @@ class ProposalLayer(caffe.Layer):
         assert bottom[0].data.shape[0] == 1, \
             'Only single item batches are supported'
 
-        cfg_key = str(self.phase) # either 'TRAIN' or 'TEST'
+        cfg_key = str(self.get_phase()) # either 'TRAIN' or 'TEST'
         pre_nms_topN  = cfg[cfg_key].RPN_PRE_NMS_TOP_N
         post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
         nms_thresh    = cfg[cfg_key].RPN_NMS_THRESH
